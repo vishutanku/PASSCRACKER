@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, abort
 import hashlib
 import os
 
@@ -12,15 +12,18 @@ def generate_hashes(text):
 
 # Simple hash cracking using a wordlist
 def crack_hash(input_hash, hash_type):
-    with open('wordlist.txt', 'r') as file:
-        for word in file:
-            word = word.strip()
-            if hash_type == 'md5':
-                if hashlib.md5(word.encode()).hexdigest() == input_hash:
-                    return word
-            elif hash_type == 'sha1':
-                if hashlib.sha1(word.encode()).hexdigest() == input_hash:
-                    return word
+    try:
+        with open('wordlist.txt', 'r') as file:
+            for word in file:
+                word = word.strip()
+                if hash_type == 'md5':
+                    if hashlib.md5(word.encode()).hexdigest() == input_hash:
+                        return word
+                elif hash_type == 'sha1':
+                    if hashlib.sha1(word.encode()).hexdigest() == input_hash:
+                        return word
+    except FileNotFoundError:
+        return "Wordlist file not found."
     return None
 
 # Route to serve the main HTML page
@@ -54,5 +57,6 @@ def crack():
     return jsonify({'crackedText': cracked_text if cracked_text else 'Not Found'})
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+
 
